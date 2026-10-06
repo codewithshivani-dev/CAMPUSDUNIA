@@ -1,0 +1,1938 @@
+@extends('instituteAdmin.instituteAdminLayout.instituteAdminLayout')
+@section('content')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<title>Shift Schedule Overview</title>
+
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #4361ee, #3a0ca3);
+    --primary-color: #4361ee;
+    --secondary-color: #3a0ca3;
+    --success-gradient: linear-gradient(135deg, #10b981, #059669);
+    --success-color: #10b981;
+    --danger-gradient: linear-gradient(135deg, #ef4444, #dc2626);
+    --warning-gradient: linear-gradient(135deg, #f59e0b, #d97706);
+    --info-gradient: linear-gradient(135deg, #3b82f6, #2563eb);
+    --accent-glow: 0 0 15px rgba(67, 97, 238, 0.3);
+}
+
+/* ERP Table Styles */
+.erp-table {
+    width: 100%;
+    background: #fff;
+    border-collapse: collapse;
+}
+
+.erp-table thead {
+    background: var(--primary-gradient);
+    border-bottom: 2px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.erp-table th {
+    padding: 15px 16px;
+    font-weight: 600;
+    color: white;
+    text-align: left;
+    font-size: 14px;
+    border-bottom: none;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+    position: relative;
+    letter-spacing: 0.3px;
+}
+
+.erp-table th:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.erp-table th.sortable {
+    padding-right: 30px;
+    min-width: 215px;
+}
+
+.sort-icons {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sort-icon {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    line-height: 1;
+}
+
+.sort-icon.active {
+    color: white;
+    text-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+
+.erp-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.erp-table tbody tr {
+    transition: all 0.3s;
+}
+
+.erp-table tbody tr:hover {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(67, 97, 238, 0.1);
+}
+
+.erp-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status Badges - Enhanced */
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+    transition: all 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.status-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.status-active {
+    background: var(--success-gradient);
+    color: white;
+    border: none;
+}
+
+.status-inactive {
+    background: var(--danger-gradient);
+    color: white;
+    border: none;
+}
+
+.status-pending {
+    background: var(--warning-gradient);
+    color: white;
+    border: none;
+}
+
+.status-unassigned {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    color: white;
+    border: none;
+}
+
+/* Assignment Type Badges - Enhanced */
+.assignment-badge {
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.assignment-individual {
+    background: var(--success-gradient);
+}
+
+.assignment-department {
+    background: var(--info-gradient);
+}
+
+/* Priority Badges - Enhanced */
+.priority-badge {
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+    color: white;
+}
+
+.priority-high {
+    background: var(--danger-gradient);
+}
+
+.priority-medium {
+    background: var(--warning-gradient);
+}
+
+.priority-low {
+    background: var(--success-gradient);
+}
+
+/* Bulk Actions - Enhanced */
+.bulk-actions-container {
+    gap: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    animation: slideDown 0.4s ease;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    padding: 15px 20px;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bulk-actions-container.active {
+    display: flex;
+}
+
+.selected-count {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-right: auto;
+    font-size: 14px;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.bulk-action-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    color: white;
+    transition: all 0.3s;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    border: 1px solid transparent;
+    margin-right: 5px;
+}
+
+.bulk-action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.bulk-action-btn:active {
+    transform: translateY(-1px);
+}
+
+.bulk-action-btn.assign,
+.bulk-action-btn.download {
+    background: var(--success-gradient);
+}
+
+.bulk-action-btn.reassign {
+    background: var(--warning-gradient);
+}
+
+.bulk-action-btn.remove,
+.bulk-action-btn.delete {
+    background: var(--danger-gradient);
+}
+
+.bulk-action-btn.clear {
+    background: linear-gradient(135deg, #64748b, #475569);
+}
+
+.bulk-action-btn i {
+    margin-right: 5px;
+}
+
+/* Checkbox styling */
+.select-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 2px solid #cbd5e1;
+    transition: all 0.2s;
+}
+
+.select-checkbox:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.select-checkbox:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+}
+
+/* Filter container - Enhanced */
+.filter-container {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;  
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-gradient);
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.filter-group {
+    position: relative;
+    min-width: 250px;
+    flex: 1;
+}
+
+.filter-group .bi {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+    z-index: 1;
+    font-size: 16px;
+}
+
+.filter-group input,
+.filter-group select {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+    transition: all 0.3s;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+    transform: translateY(-2px);
+}
+
+.filter-group input:hover,
+.filter-group select:hover {
+    border-color: var(--secondary-color);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.btn-filter {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.btn-filter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    text-decoration: none;
+}
+
+.btn-filter:active {
+    transform: translateY(-1px);
+}
+
+.btn-filter-primary {
+    background: var(--primary-gradient);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-filter-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-filter-primary:hover::before {
+    left: 100%;
+}
+
+.btn-filter-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-filter-secondary:hover {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+/* Page Header - Enhanced */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px 30px;
+    background: var(--primary-gradient);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(67, 97, 238, 0.3);
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.page-title i {
+    font-size: 32px;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Statistics Cards - Enhanced */
+.stat-card {
+    background: white;
+    border: none;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.4s;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-gradient);
+    transition: width 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 35px rgba(67, 97, 238, 0.15);
+}
+
+.stat-card:hover::before {
+    width: 8px;
+}
+
+.stat-card .stat-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 16px;
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2);
+}
+
+.stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+}
+
+.stat-card .stat-label {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Employee Avatar */
+.employee-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 12px;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2);
+}
+
+/* Time Display - Enhanced */
+.time-display {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    padding: 8px 2px;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+    width:100px;
+}
+
+.time-start {
+    color: var(--success-color);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.time-end {
+    color: var(--danger-color);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.time-separator {
+    color: #94a3b8;
+    font-size: 11px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Main Card */
+.card {
+    border: none;
+    border-radius: 20px !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    /*overflow: hidden;*/
+}
+
+.card-body {
+    padding: 0 !important;
+}
+
+/* Loading Animation */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #e2e8f0;
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Empty State - Enhanced */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+}
+
+.empty-state h4 {
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+/* Alert Messages - Enhanced */
+.alert-dismissible {
+    border: none;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    border: 1px solid #86efac;
+    color: #166534;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    padding: 8px 0;
+    overflow: hidden;
+}
+
+.dropdown-item {
+    font-size: 14px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    padding-left: 25px;
+}
+
+/* Pagination - Enhanced */
+.pagination {
+    gap: 5px;
+}
+
+.page-link {
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    color: #475569;
+    padding: 8px 14px;
+    transition: all 0.3s;
+}
+
+.page-link:hover {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+}
+
+.page-item.active .page-link {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: white;
+}
+
+/* Floating Assign Button - Enhanced */
+.assign-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    box-shadow: 0 10px 30px rgba(67, 97, 238, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 100;
+    text-decoration: none;
+}
+
+.assign-btn:hover {
+    background: var(--primary-gradient);
+    transform: scale(1.1) translateY(-5px);
+    box-shadow: 0 15px 40px rgba(67, 97, 238, 0.5);
+    color: white;
+}
+
+.assign-btn i {
+    transition: transform 0.3s;
+}
+
+.assign-btn:hover i {
+    transform: rotate(90deg);
+}
+
+/* Page Loader */
+#pageLoader {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Badge styles */
+.badge.bg-gray-100 {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    color: #475569;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* Text utilities */
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-success {
+    color: #10b981 !important;
+}
+
+.text-warning {
+    color: #f59e0b !important;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+.text-muted {
+    color: #94a3b8 !important;
+}
+
+.fw-bold {
+    font-weight: 600 !important;
+}
+
+.small {
+    font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        padding: 20px;
+    }
+
+    .page-title {
+        font-size: 24px;
+    }
+
+    .bulk-actions-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bulk-actions-container .d-flex {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-form {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        min-width: 100%;
+    }
+
+    .filter-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .btn-filter {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .stat-card {
+        padding: 20px;
+    }
+
+    .stat-card .stat-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+    }
+
+    .assign-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+    }
+}
+
+
+/* Pagination Container */
+.pagination {
+    display: flex;
+    list-style: none;
+    gap: 6px;
+    padding: 0;
+
+}
+
+.page-item .page-link {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    font-size: 13px;
+}
+
+.page-item.active .page-link {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+}
+
+.page-item.disabled .page-link {
+    background: #f5f5f5;
+    color: #aaa;
+}
+
+/* Pagination Wrapper */
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0px 20px;
+}
+
+/* Showing Text */
+.pagination-info {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.table-responsive{
+    overflow-x: hidden;
+}
+</style>
+
+
+<div id="pageLoader" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(255,255,255,0.9);
+    backdrop-filter: blur(5px);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    ">
+    <div class="spinner"></div>
+</div>
+
+<div class="container-fluid">
+    <div class="main-container">
+        <!-- Page Header - Enhanced -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="bi bi-calendar-week"></i>
+                Shift Schedule Overview
+            </h1>
+            <div class="d-flex gap-2">
+                <a href="{{ route('shifts.assignform') }}" class="btn-filter btn-filter-primary"
+                    style="font-size: 14px; padding: 8px 16px; background: var(--primary-gradient); color: #fff;">
+                    <i class="bi bi-person-plus me-1"></i>Assign Shifts
+                </a>
+            </div>
+        </div>
+    
+        <!-- Statistics Cards - Enhanced -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="stat-value" id="totalEmployees">{{ $employees->count() }}</div>
+                    <div class="stat-label">Total Employees</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                    <div class="stat-value" id="individualShiftsCount">0</div>
+                    <div class="stat-label">Employees Shifts</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <div class="stat-value" id="departmentShiftsCount">0</div>
+                    <div class="stat-label">Department Shifts</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div class="stat-value" id="noShiftsCount">0</div>
+                    <div class="stat-label">No Shifts Assigned</div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Success Message -->
+        @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+    
+        <!-- Filters - Enhanced -->
+        <div class="filter-container">
+            <form method="GET" id="filterForm" class="filter-form">
+    
+                <!-- Hidden ID fields -->
+                <input type="hidden" name="employee_id" id="employee_id">
+                <input type="hidden" name="department_id" id="department_id">
+                <input type="hidden" name="shift_id" id="shift_id">
+                <input type="hidden" name="start_time" id="start_time">
+                <input type="hidden" name="end_time" id="end_time">
+    
+                <div class="filter-group">
+                    <i class="bi bi-person"></i>
+                    <input class="filter-input datalist-input" list="employeeList" placeholder="Search Employee"
+                        data-hidden="employee_id" value="{{ optional($allEmployees->firstWhere('employee_id', $employeeId))->name
+                    ? optional($allEmployees->firstWhere('employee_id', $employeeId))->name
+                      . ' (' . optional($allEmployees->firstWhere('employee_id', $employeeId))->employee_code . ')'
+                    : '' }}">
+                    <datalist id="employeeList">
+                        @foreach($allEmployees as $emp)
+                        <option value="{{ $emp->name }} ({{ $emp->employee_code }})" data-id="{{ $emp->employee_id }}">
+                        </option>
+                        @endforeach
+                    </datalist>
+                </div>
+    
+                <div class="filter-group">
+                    <i class="bi bi-building"></i>
+                    <input class="filter-input datalist-input" list="departmentList" placeholder="Search Department"
+                        data-hidden="department_id"
+                        value="{{ optional($departments->firstWhere('department_id', $departmentId))->department }}">
+                    <datalist id="departmentList">
+                        @foreach($departments as $dept)
+                        <option value="{{ $dept->department }}" data-id="{{ $dept->department_id }}"></option>
+                        @endforeach
+                    </datalist>
+                </div>
+    
+                <div class="filter-group">
+                    <i class="bi bi-clock"></i>
+                    <input class="filter-input datalist-input" list="shiftList" placeholder="Search Shift"
+                        data-hidden="shift_id" value="{{ optional($shifts->firstWhere('id', $shiftId))->shift_name }}">
+                    <datalist id="shiftList">
+                        @foreach($shifts as $shift)
+                        <option value="{{ $shift->shift_name }}" data-id="{{ $shift->id }}"></option>
+                        @endforeach
+                    </datalist>
+                </div>
+    
+                <div class="filter-group">
+                    <i class="bi bi-alarm"></i>
+                    <input class="filter-input datalist-input" list="startTimeList" placeholder="Start Time"
+                        data-hidden="start_time" value="{{ $startTime }}">
+                    <datalist id="startTimeList">
+                        @foreach($shifts->unique('start_time') as $shift)
+                        <option value="{{ $shift->start_time }}" data-id="{{ $shift->start_time }}"></option>
+                        @endforeach
+                    </datalist>
+                </div>
+    
+                <div class="filter-group">
+                    <i class="bi bi-alarm-fill"></i>
+                    <input class="filter-input datalist-input" list="endTimeList" placeholder="End Time"
+                        value="{{ $endTime }}" data-hidden="end_time">
+                    <datalist id="endTimeList">
+                        @foreach($shifts->unique('end_time') as $shift)
+                        <option value="{{ $shift->end_time }}" data-id="{{ $shift->end_time }}"></option>
+                        @endforeach
+                    </datalist>
+                </div>
+    
+                <div class="filter-actions">
+                    <a href="{{ route('shifts.schedule') }}" class="btn-filter btn-filter-secondary">
+                        <i class="bi bi-x-circle"></i> Reset Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    
+        <!-- Bulk Actions Container - Enhanced -->
+        <div class="bulk-actions-container" id="bulkActionsContainer">
+            <div class="selected-count" id="selectedCount">0 employees selected</div>
+            <div class="d-flex flex-wrap">
+    
+                <div class="dropdown me-2">
+                    <button class="bulk-action-btn download dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="bi bi-download"></i>
+                        Download
+                    </button>
+    
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" onclick="bulkAction('download','excel')">
+                                <i class="bi bi-file-earmark-excel text-success me-2"></i>
+                                Excel (.xlsx)
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" onclick="bulkAction('download','csv')">
+                                <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                                CSV (.csv)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+    
+                <button class="bulk-action-btn delete" onclick="bulkAction('bulk_delete')">
+                    <i class="bi bi-trash"></i>
+                    Bulk Delete
+                </button>
+                <button class="bulk-action-btn assign d-none" onclick="bulkAction('assign')">
+                    <i class="bi bi-person-plus"></i>
+                    Assign Shift
+                </button>
+                <button class="bulk-action-btn reassign d-none" onclick="bulkAction('reassign')">
+                    <i class="bi bi-arrow-repeat"></i>
+                    Reassign Shift
+                </button>
+                <button class="bulk-action-btn remove d-none" onclick="bulkAction('remove')">
+                    <i class="bi bi-trash"></i>
+                    Remove Shift
+                </button>
+                <button class="bulk-action-btn clear" onclick="clearSelection()">
+                    <i class="bi bi-x-lg"></i>
+                    Clear
+                </button>
+            </div>
+        </div>
+    
+        <!-- Main Table - Enhanced -->
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-0">
+                <div class="table-responsive custom-table-wrapper" id="tableWrapper">
+                    <table class="erp-table">
+                        <thead>
+                            <tr>
+                                <th class="sticky-checkbox" width="40">
+                                    <input type="checkbox" id="selectAll" class="select-checkbox">
+                                </th>
+                                <th class="sticky-main sortable" onclick="sortTable('name')">
+                                    Employee
+                                    <div class="sort-icons">
+                                        <i class="sort-icon bi bi-caret-up-fill"></i>
+                                        <i class="sort-icon bi bi-caret-down-fill"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" onclick="sortTable('department_name')">
+                                    Department
+                                    <div class="sort-icons">
+                                        <i class="sort-icon bi bi-caret-up-fill"></i>
+                                        <i class="sort-icon bi bi-caret-down-fill"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" onclick="sortTable('shift_name')">
+                                    Shift
+                                    <div class="sort-icons">
+                                        <i class="sort-icon bi bi-caret-up-fill"></i>
+                                        <i class="sort-icon bi bi-caret-down-fill"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" onclick="sortTable('start_time')">
+                                    Timing
+                                    <div class="sort-icons">
+                                        <i class="sort-icon bi bi-caret-up-fill"></i>
+                                        <i class="sort-icon bi bi-caret-down-fill"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" onclick="sortTable('working_hours')">
+                                    Duration
+                                    <div class="sort-icons">
+                                        <i class="sort-icon bi bi-caret-up-fill"></i>
+                                        <i class="sort-icon bi bi-caret-down-fill"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" onclick="sortTable('break_minutes')">
+                                    Break
+                                    <div class="sort-icons">
+                                        <i class="sort-icon bi bi-caret-up-fill"></i>
+                                        <i class="sort-icon bi bi-caret-down-fill"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" onclick="sortTable('grace_minutes')">
+                                    Grace
+                                    <div class="sort-icons">
+                                        <i class="sort-icon bi bi-caret-up-fill"></i>
+                                        <i class="sort-icon bi bi-caret-down-fill"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable">Weekly Off</th>
+                                <th class="sortable" onclick="sortTable('status')">
+                                    Status
+                                    <div class="sort-icons">
+                                        <i class="sort-icon bi bi-caret-up-fill"></i>
+                                        <i class="sort-icon bi bi-caret-down-fill"></i>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeesTableBody">
+                            @forelse($employees as $emp)
+                            @php
+                            // Determine shift information
+                            $hasIndividualShift = isset($emp->employee_shift);
+                            $hasDepartmentShift = isset($emp->department_shift);
+                            $hasShift = $hasIndividualShift || $hasDepartmentShift;
+    
+                            // Get the appropriate shift data
+                            if ($hasIndividualShift) {
+                            $shift = $emp->employee_shift;
+                            $shiftSource = 'individual';
+                            $assignmentType = 'Individual';
+                            $assignmentClass = 'assignment-individual';
+                            } elseif ($hasDepartmentShift) {
+                            $shift = $emp->department_shift;
+                            $shiftSource = 'department';
+                            $assignmentType = 'Department';
+                            $assignmentClass = 'assignment-department';
+                            } else {
+                            $shift = null;
+                            $shiftSource = 'none';
+                            $assignmentType = null;
+                            $assignmentClass = '';
+                            }
+    
+                            // Get shift status
+                            $shiftStatus = $emp->status ?? null;
+                            $isActive = $shiftStatus == 'active';
+    
+                            // Calculate duration if shift exists
+                            $duration = 'N/A';
+                            if ($shift && $shift->start_time && $shift->end_time) {
+                            $start = \Carbon\Carbon::parse($shift->start_time);
+                            $end = \Carbon\Carbon::parse($shift->end_time);
+                            $durationHours = $start->diffInHours($end);
+                            $durationMinutes = $start->diffInMinutes($end) % 60;
+                            $duration = $durationHours . 'h';
+                            if ($durationMinutes > 0) {
+                            $duration .= ' ' . $durationMinutes . 'm';
+                            }
+                            }
+    
+                            // Prepare weekly off days
+                            $weeklyOffs = [];
+                            if ($shift && $shift->weekly_off_days) {
+                            $weeklyOffs = is_array($shift->weekly_off_days)
+                            ? $shift->weekly_off_days
+                            : json_decode($shift->weekly_off_days, true);
+                            }
+    
+                            // Get initials for avatar
+                            $initials = '';
+                            if ($emp->name) {
+                            $nameParts = explode(' ', $emp->name);
+                            if (count($nameParts) >= 2) {
+                            $initials = strtoupper(substr($nameParts[0], 0, 1) . substr($nameParts[1], 0, 1));
+                            } else {
+                            $initials = strtoupper(substr($emp->name, 0, 2));
+                            }
+                            }
+                            @endphp
+                            <tr class="employee-row" data-name="{{ strtolower($emp->name . ' ' . $emp->employee_code) }}"
+                                data-department="{{ strtolower($emp->department_name ?? '') }}"
+                                data-category="{{ strtolower($emp->department_category_name ?? '') }}"
+                                data-source="{{ $shiftSource }}"
+                                data-status="{{ $isActive ? 'active' : ($hasShift ? 'inactive' : 'none') }}"
+                                data-employee-id="{{ $emp->id }}">
+                                <td class="sticky-checkbox">
+                                    <input type="checkbox" class="employee-checkbox select-checkbox" value="{{ $emp->id }}">
+                                </td>
+                                <td class="sticky-main">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="employee-avatar">
+                                            {{ $initials }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ $emp->name }}</div>
+                                            <div class="small text-primary">{{ $emp->designation }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($emp->department_name)
+                                    <div>
+                                        <div class="d-inline-block fw-semibold">
+                                            {{ $emp->department_name }}
+                                        </div>
+                                        @if($emp->department_category_name)
+                                        <div class="small text-primary">
+                                            {{ $emp->department_category_name }}
+                                        </div>
+                                        @endif
+                                    </div>
+                                    @else
+                                    <span class="text-muted">No Department</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($hasShift)
+                                    <div>
+                                        <div class="fw-bold">{{ $shift->shift_name }}</div>
+                                        @if($assignmentType)
+                                        <span class="assignment-badge {{ $assignmentClass }} mt-1">
+                                            {{ $assignmentType }}
+                                        </span>
+                                        @endif
+                                        @if($shift->priority)
+                                        <div class="mt-2">
+                                            <span class="priority-badge priority-{{ $shift->priority }}">
+                                                {{ ucfirst($shift->priority) }} Priority
+                                            </span>
+                                        </div>
+                                        @endif
+                                    </div>
+                                    @else
+                                    <span class="text-muted">No Shift Assigned</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($hasShift && $shift->start_time && $shift->end_time)
+                                    <div class="time-display">
+                                        <span class="time-start">
+                                            <i class="bi bi-sun"></i> {{ \Carbon\Carbon::parse($shift->start_time)->format('h:i A') }}
+                                        </span>
+                                        <span class="time-separator">↓</span>
+                                        <span class="time-end">
+                                            <i class="bi bi-moon"></i> {{ \Carbon\Carbon::parse($shift->end_time)->format('h:i A') }}
+                                        </span>
+                                    </div>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($hasShift)
+                                    <span class="fw-semibold">{{ $duration }}</span>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($hasShift)
+                                    <span class="fw-semibold">
+                                        {{ $shift->break_minutes ?? 0 }} min
+                                    </span>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($hasShift)
+                                    <span class="fw-semibold">
+                                        {{ $shift->grace_minutes ?? 0 }} min
+                                    </span>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($hasShift && $weeklyOffs && count($weeklyOffs) > 0)
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach(array_slice($weeklyOffs, 0, 2) as $day)
+                                        <span class="badge bg-gray-100">
+                                            {{ substr($day, 0, 3) }}
+                                        </span>
+                                        @endforeach
+                                        @if(count($weeklyOffs) > 2)
+                                        <span class="badge bg-gray-100">
+                                            +{{ count($weeklyOffs) - 2 }}
+                                        </span>
+                                        @endif
+                                    </div>
+                                    @else
+                                    <span class="text-muted">None</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($hasShift)
+                                    <span class="status-badge {{ $isActive ? 'status-active' : 'status-inactive' }}">
+                                        {{ $isActive ? 'Active' : 'Inactive' }}
+                                    </span>
+                                    @else
+                                    <span class="status-badge status-unassigned">
+                                        Not Assigned
+                                    </span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="11" class="text-center">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">
+                                            <i class="bi bi-person-x"></i>
+                                        </div>
+                                        <h4>No Employees Found</h4>
+                                        <p>No employees have been assigned shifts yet.</p>
+                                        <a href="{{ route('shifts.assignform') }}"
+                                            class="btn-filter btn-filter-primary mt-3">
+                                            <i class="bi bi-person-plus me-1"></i>Assign Shifts
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Floating Horizontal Scrollbar -->
+                <div class="table-scroll-top" id="tableScrollTop">
+                    <div class="table-scroll-inner"></div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- @if($employees->hasPages())
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">
+                Showing
+                {{ $employees->firstItem() }}
+                –
+                {{ $employees->lastItem() }}
+                of
+                {{ $employees->total() }}
+                employees
+            </div>
+    
+            <nav>
+                <ul class="pagination mb-0">
+                    {{-- Previous --}}
+                    <li class="page-item {{ $employees->onFirstPage() ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ $employees->previousPageUrl() }}"
+                            onclick="resetCheckboxesOnPageChange()">
+                            ‹
+                        </a>
+                    </li>
+    
+                    {{-- Pages --}}
+                    @foreach ($employees->getUrlRange(1, $employees->lastPage()) as $page => $url)
+                    <li class="page-item {{ $employees->currentPage() == $page ? 'active' : '' }}">
+                        <a class="page-link" href="{{ $url }}" onclick="resetCheckboxesOnPageChange()">
+                            {{ $page }}
+                        </a>
+                    </li>
+                    @endforeach
+    
+                    {{-- Next --}}
+                    <li class="page-item {{ $employees->hasMorePages() ? '' : 'disabled' }}">
+                        <a class="page-link" href="{{ $employees->nextPageUrl() }}" onclick="resetCheckboxesOnPageChange()">
+                            ›
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        @endif -->
+    
+        <!-- Pagination -->
+        <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Showing {{ $employees->firstItem() }} to {{ $employees->lastItem() }}
+                        of {{ $employees->total() }} employees
+                    </div>
+    
+                    @if ($employees->hasPages())
+                    <nav>
+                        <ul class="pagination mb-0">
+    
+                            {{-- Previous Page --}}
+                            @if ($employees->onFirstPage())
+                            <li class="page-item disabled"><span class="page-link">Prev</span></li>
+                            @else
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $employees->previousPageUrl() }}">Prev</a>
+                            </li>
+                            @endif
+    
+                            {{-- Page Numbers --}}
+                            @for ($i = 1; $i <= $employees->lastPage(); $i++)
+                                <li class="page-item {{ $employees->currentPage() == $i ? 'active' : '' }}">
+                                    <a class="page-link" href="{{ $employees->url($i) }}">{{ $i }}</a>
+                                </li>
+                                @endfor
+    
+                                {{-- Next Page --}}
+                                @if ($employees->hasMorePages())
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $employees->nextPageUrl() }}">Next</a>
+                                </li>
+                                @else
+                                <li class="page-item disabled"><span class="page-link">Next</span></li>
+                                @endif
+    
+                        </ul>
+                    </nav>
+                    @endif
+                </div>
+    </div>
+</div>
+
+<!-- Floating Assign Button - Enhanced -->
+<a href="{{ route('shifts.assignform') }}" class="assign-btn d-none" title="Assign Shifts">
+    <i class="bi bi-plus-lg"></i>
+</a>
+
+<script>
+function showLoader() {
+    const loader = document.getElementById('pageLoader');
+    if (loader) loader.style.display = 'flex';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    calculateStatistics();
+    setupBulkSelection();
+    setupSorting();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const form = document.getElementById('filterForm');
+
+    document.querySelectorAll('.datalist-input').forEach(input => {
+        input.addEventListener('change', function() {
+
+            const listId = this.getAttribute('list');
+            const hiddenField = document.getElementById(this.dataset.hidden);
+            // document.getElementById('selectAll').checked = false;
+            const option = document.querySelector(
+                `#${listId} option[value="${this.value}"]`
+            );
+
+            hiddenField.value = option ? option.dataset.id : '';
+            showLoader()
+            form.submit();
+        });
+    });
+
+});
+
+// Bulk Selection Functions
+function setupBulkSelection() {
+    const selectAll = document.getElementById('selectAll');
+    const bulkActionsContainer = document.getElementById('bulkActionsContainer');
+    const selectedCount = document.getElementById('selectedCount');
+
+    if (!selectAll) return; // ✅ prevents JS crash
+
+    function checkboxes() {
+        return document.querySelectorAll('.employee-checkbox');
+    }
+
+    function updateUI() {
+        const all = checkboxes();
+        const checked = [...all].filter(cb => cb.checked);
+
+        if (checked.length > 0) {
+            bulkActionsContainer.classList.add('active');
+            selectedCount.textContent = `${checked.length} employee(s) selected`;
+        } else {
+            bulkActionsContainer.classList.remove('active');
+            selectedCount.textContent = '0 employees selected';
+        }
+
+        selectAll.checked = checked.length === all.length && all.length > 0;
+        selectAll.indeterminate = checked.length > 0 && checked.length < all.length;
+    }
+
+    // ✅ Select all checkbox
+    selectAll.addEventListener('change', function() {
+        checkboxes().forEach(cb => cb.checked = this.checked);
+        updateUI();
+    });
+
+    // ✅ Individual checkbox (EVENT DELEGATION)
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('employee-checkbox')) {
+            updateUI();
+        }
+    });
+
+    updateUI();
+}
+
+function clearSelection() {
+    document.querySelectorAll('.employee-checkbox').forEach(cb => cb.checked = false);
+
+    const selectAll = document.getElementById('selectAll');
+    selectAll.checked = false;
+    selectAll.indeterminate = false;
+
+    document.getElementById('bulkActionsContainer').classList.remove('active');
+    document.getElementById('selectedCount').textContent = '0 employees selected';
+}
+
+function bulkAction(action, format = null) {
+
+    const selectedEmployees = Array.from(
+        document.querySelectorAll('.employee-checkbox:checked')
+    ).map(cb => cb.value);
+
+    if (selectedEmployees.length === 0) {
+        showAlert('Please select at least one employee.', 'warning');
+        return;
+    }
+
+    switch (action) {
+        case 'download':
+
+            if (!format) {
+                alert("Please select a format");
+                return;
+            }
+
+            const ids = selectedEmployees.join(',');
+
+            const url = `/shift-schedule/download?ids=${ids}&type=${format}`;
+
+            window.location.href = url;
+
+            break;
+        case 'assign':
+            window.location.href =
+                `{{ route('shifts.assignform') }}?employee_ids=${selectedEmployees.join(',')}`;
+            break;
+
+        case 'bulk_delete':
+            if (!confirm(`Delete ${selectedEmployees.length} employee(s)?`)) return;
+            clearSelection();
+            alert('Deleted successfully');
+            break;
+
+        case 'remove':
+            if (!confirm(`Remove shift from ${selectedEmployees.length} employee(s)?`)) return;
+            removeShiftAssignments(selectedEmployees);
+            break;
+    }
+}
+
+function removeShiftAssignments(employeeIds) {
+    const btn = event?.target?.closest('button');
+    if (btn) {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="loading-spinner"></span> Removing...';
+        btn.disabled = true;
+    }
+
+    // This is a placeholder - you would need to implement the actual API endpoint
+    console.log('Removing shifts for employees:', employeeIds);
+
+    // Simulate API call
+    setTimeout(() => {
+        // Update UI to show removed shifts
+        employeeIds.forEach(id => {
+            const row = document.querySelector(`.employee-row[data-employee-id="${id}"]`);
+            if (row) {
+                // Update shift info to show "No Shift Assigned"
+                const shiftCell = row.cells[3];
+                shiftCell.innerHTML = `<span class="text-muted">No Shift Assigned</span>`;
+
+                // Update timing cell
+                const timingCell = row.cells[4];
+                timingCell.innerHTML = `<span class="text-muted">-</span>`;
+
+                // Update duration cell
+                const durationCell = row.cells[5];
+                durationCell.innerHTML = `<span class="text-muted">-</span>`;
+
+                // Update break cell
+                const breakCell = row.cells[6];
+                breakCell.innerHTML = `<span class="text-muted">-</span>`;
+
+                // Update grace cell
+                const graceCell = row.cells[7];
+                graceCell.innerHTML = `<span class="text-muted">-</span>`;
+
+                // Update weekly off cell
+                const weeklyOffCell = row.cells[8];
+                weeklyOffCell.innerHTML = `<span class="text-muted">None</span>`;
+
+                // Update status cell
+                const statusCell = row.cells[9];
+                statusCell.innerHTML =
+                    `<span class="status-badge status-unassigned">Not Assigned</span>`;
+
+                // Update data attributes
+                row.dataset.source = 'none';
+                row.dataset.status = 'none';
+            }
+        });
+
+        // Recalculate statistics
+        calculateStatistics();
+        clearSelection();
+        showAlert(`${employeeIds.length} shift assignment(s) removed successfully!`, 'success');
+
+        if (btn) {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+    }, 1000);
+}
+
+// Sorting Functions
+function setupSorting() {
+    let currentSort = {
+        column: null,
+        order: 'asc' // 'asc' or 'desc'
+    };
+
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.getAttribute('onclick').match(/sortTable\('(.+)'\)/)[1];
+
+            if (currentSort.column === column) {
+                // Toggle order if same column
+                currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+            } else {
+                // New column, start with asc
+                currentSort.column = column;
+                currentSort.order = 'asc';
+            }
+
+            sortTable(column);
+        });
+    });
+}
+
+function sortTable(column) {
+    const rows = Array.from(document.querySelectorAll('.employee-row:not([style*="display: none"])'));
+    const tbody = document.getElementById('employeesTableBody');
+
+    // Remove existing empty state row if present
+    const existingEmptyRow = document.querySelector('.empty-state-row');
+    if (existingEmptyRow) {
+        tbody.removeChild(existingEmptyRow);
+    }
+
+    // Get current sort state from data attribute or default
+    let currentSortColumn = column;
+    let currentSortOrder = 'asc';
+
+    // Check if this column is already sorted
+    const sortableHeader = document.querySelector(`th[onclick*="sortTable('${column}')"]`);
+    if (sortableHeader) {
+        const sortIcons = sortableHeader.querySelectorAll('.sort-icon');
+
+        // Reset all sort icons
+        document.querySelectorAll('.sort-icon').forEach(icon => {
+            icon.classList.remove('active');
+        });
+
+        // Set active sort icon
+        if (currentSortOrder === 'asc') {
+            sortIcons[0].classList.add('active');
+        } else {
+            sortIcons[1].classList.add('active');
+        }
+    }
+
+    // Sort rows based on column
+    rows.sort((a, b) => {
+        let aValue, bValue;
+
+        switch (column) {
+            case 'name':
+                aValue = a.querySelector('td:nth-child(2) .fw-bold').textContent.toLowerCase();
+                bValue = b.querySelector('td:nth-child(2) .fw-bold').textContent.toLowerCase();
+                break;
+
+            case 'department_name':
+                aValue = a.querySelector('td:nth-child(3) > div > div').textContent.toLowerCase();
+                bValue = b.querySelector('td:nth-child(3) > div > div').textContent.toLowerCase();
+                break;
+
+            case 'shift_name':
+                aValue = a.querySelector('td:nth-child(4) .fw-bold').textContent.toLowerCase();
+                bValue = b.querySelector('td:nth-child(4) .fw-bold').textContent.toLowerCase();
+                // Handle "No Shift Assigned" as empty string for proper sorting
+                if (aValue === 'no shift assigned') aValue = '';
+                if (bValue === 'no shift assigned') bValue = '';
+                break;
+
+            case 'start_time':
+                aValue = a.querySelector('td:nth-child(5) .time-start')?.textContent || '';
+                bValue = b.querySelector('td:nth-child(5) .time-start')?.textContent || '';
+                break;
+
+            case 'working_hours':
+                aValue = parseFloat(a.querySelector('td:nth-child(6)').textContent.replace('h', '').replace('m',
+                    '').trim()) || 0;
+                bValue = parseFloat(b.querySelector('td:nth-child(6)').textContent.replace('h', '').replace('m',
+                    '').trim()) || 0;
+                break;
+
+            case 'break_minutes':
+                aValue = parseInt(a.querySelector('td:nth-child(7)').textContent) || 0;
+                bValue = parseInt(b.querySelector('td:nth-child(7)').textContent) || 0;
+                break;
+
+            case 'grace_minutes':
+                aValue = parseInt(a.querySelector('td:nth-child(8)').textContent) || 0;
+                bValue = parseInt(b.querySelector('td:nth-child(8)').textContent) || 0;
+                break;
+
+            case 'status':
+                aValue = a.querySelector('td:nth-child(10) .status-badge').textContent.toLowerCase();
+                bValue = b.querySelector('td:nth-child(10) .status-badge').textContent.toLowerCase();
+                break;
+
+            default:
+                return 0;
+        }
+
+        // Handle string comparison
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+            if (currentSortOrder === 'asc') {
+                return aValue.localeCompare(bValue);
+            } else {
+                return bValue.localeCompare(aValue);
+            }
+        }
+
+        // Handle number comparison
+        if (currentSortOrder === 'asc') {
+            return aValue - bValue;
+        } else {
+            return bValue - aValue;
+        }
+    });
+
+    // Reorder rows in table
+    rows.forEach(row => {
+        tbody.appendChild(row);
+    });
+
+    // Show empty state if no rows visible
+    const visibleRows = document.querySelectorAll('.employee-row:not([style*="display: none"])');
+    if (visibleRows.length === 0) {
+        showEmptyState(true);
+    }
+}
+
+// Existing Functions (unchanged)
+function calculateStatistics() {
+    let individualCount = 0;
+    let departmentCount = 0;
+    let noShiftCount = 0;
+
+    const rows = document.querySelectorAll('.employee-row');
+    rows.forEach(row => {
+        const source = row.dataset.source || 'none';
+        if (source === 'individual') {
+            individualCount++;
+        } else if (source === 'department') {
+            departmentCount++;
+        } else {
+            noShiftCount++;
+        }
+    });
+
+    document.getElementById('individualShiftsCount').textContent = individualCount;
+    document.getElementById('departmentShiftsCount').textContent = departmentCount;
+    document.getElementById('noShiftsCount').textContent = noShiftCount;
+}
+
+
+function showEmptyState(show) {
+    // Remove existing empty state row if any
+    const existingEmptyRow = document.querySelector('.empty-state-row');
+    if (existingEmptyRow) {
+        existingEmptyRow.remove();
+    }
+
+    if (show) {
+        const tbody = document.querySelector('#employeesTableBody');
+        const emptyRow = document.createElement('tr');
+        emptyRow.className = 'empty-state-row';
+        emptyRow.innerHTML = `
+            <td colspan="11" class="text-center">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h4>No Employees Found</h4>
+                    <p>Try adjusting your filters or clear them to see all employees</p>
+                    <button onclick="resetFilters()" class="btn-filter btn-filter-primary mt-3">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Reset Filters
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(emptyRow);
+    }
+}
+
+function showAlert(message, type) {
+    // Remove existing alerts
+    document.querySelectorAll('.alert-dismissible').forEach(alert => {
+        if (alert.parentNode) alert.remove();
+    });
+
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+
+    let icon = '';
+    switch (type) {
+        case 'success':
+            icon = 'check-circle-fill';
+            break;
+        case 'warning':
+            icon = 'exclamation-triangle-fill';
+            break;
+        case 'danger':
+            icon = 'exclamation-circle-fill';
+            break;
+        case 'info':
+            icon = 'info-circle-fill';
+            break;
+        default:
+            icon = 'info-circle-fill';
+    }
+
+    alertDiv.innerHTML = `
+        <i class="bi bi-${icon} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    const container = document.querySelector('.container-fluid');
+    if (container) {
+        container.insertBefore(alertDiv, container.firstChild);
+    }
+
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Export functions for external use
+// window.resetFilters = resetFilters;
+// window.applyFilters = applyFilters;
+window.clearSelection = clearSelection;
+window.bulkAction = bulkAction;
+</script>
+@endsection

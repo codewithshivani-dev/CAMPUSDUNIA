@@ -1,0 +1,1059 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admission Form</title>
+        <!-- Fonts & Icons -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <!-- SweetAlert2 -->
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+        />
+        <style>
+            :root {
+                --primary-blue: #4361ee;
+                --primary-light: #eef2ff;
+                --success: #10b981;
+                --danger: #ef4444;
+                --text-dark: #374151;
+                --text-light: #6b7280;
+                --border-color: #d1d5db;
+                --radius: 8px;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Inter", sans-serif;
+                background: #f9fafb;
+                min-height: 100vh;
+                padding: 15px;
+                color: var(--text-dark);
+                font-size: 13px;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+
+            /* Form Wrapper */
+            .form-wrapper {
+                background: white;
+                border-radius: var(--radius);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                overflow: hidden;
+            }
+
+            /* Header */
+            .form-header {
+                background: linear-gradient(
+                    135deg,
+                    var(--primary-blue),
+                    #3730a3
+                );
+                color: white;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .form-header h1 {
+                font-size: 20px;
+                margin-bottom: 5px;
+                font-weight: 600;
+            }
+
+            .form-header p {
+                opacity: 0.9;
+                font-size: 12px;
+            }
+
+            /* Content */
+            .form-content {
+                padding: 25px;
+            }
+
+            /* Section Styling */
+            .form-section {
+                margin-bottom: 25px;
+            }
+
+            .section-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .section-icon {
+                width: 32px;
+                height: 32px;
+                background: var(--primary-light);
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--primary-blue);
+                font-size: 14px;
+            }
+
+            .section-title h3 {
+                font-size: 14px;
+                color: var(--text-dark);
+                margin-bottom: 3px;
+                font-weight: 600;
+            }
+
+            .section-title p {
+                font-size: 11px;
+                color: var(--text-light);
+            }
+
+            /* Applicant Type Selection */
+            .applicant-options {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 12px;
+                margin-top: 15px;
+            }
+
+            .applicant-card {
+                padding: 15px;
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius);
+                background: white;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-align: center;
+            }
+
+            .applicant-card:hover {
+                border-color: var(--primary-blue);
+            }
+
+            .applicant-card.active {
+                border-color: var(--primary-blue);
+                background: var(--primary-light);
+            }
+
+            .applicant-icon {
+                width: 40px;
+                height: 40px;
+                background: var(--primary-light);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 8px;
+                font-size: 16px;
+                color: var(--primary-blue);
+            }
+
+            .applicant-card.active .applicant-icon {
+                background: var(--primary-blue);
+                color: white;
+            }
+
+            .applicant-card h4 {
+                font-size: 13px;
+                margin-bottom: 4px;
+                font-weight: 600;
+            }
+
+            .applicant-card p {
+                font-size: 11px;
+                color: var(--text-light);
+                line-height: 1.3;
+            }
+
+            /* Parent Details */
+            .parent-details {
+                background: #fffbeb;
+                border: 1px solid #fbbf24;
+                border-radius: var(--radius);
+                padding: 15px;
+                margin-top: 15px;
+                display: none;
+            }
+
+            /* Two Column Layout */
+            .two-column-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-top: 15px;
+            }
+
+            /* Form Groups */
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .form-label {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin-bottom: 5px;
+                font-weight: 500;
+                color: var(--text-dark);
+                font-size: 12px;
+            }
+
+            .form-label i {
+                color: var(--primary-blue);
+                width: 14px;
+                font-size: 12px;
+            }
+
+            .required::after {
+                content: " *";
+                color: var(--danger);
+                font-size: 11px;
+            }
+
+            /* Input Styling */
+            .input-container {
+                position: relative;
+            }
+
+            .input-icon {
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--text-light);
+                font-size: 13px;
+            }
+
+            input,
+            select,
+            textarea {
+                width: 100%;
+                padding: 10px 10px 10px 35px;
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                font-size: 12px;
+                font-family: "Inter", sans-serif;
+                background: white;
+            }
+
+            textarea {
+                min-height: 70px;
+                resize: vertical;
+                padding-top: 10px;
+            }
+
+            .textarea-icon {
+                top: 12px;
+                transform: none;
+            }
+
+            select {
+                appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                background-size: 12px;
+                padding-right: 30px;
+            }
+
+            input:focus,
+            select:focus,
+            textarea:focus {
+                outline: none;
+                border-color: var(--primary-blue);
+                box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+            }
+
+            /* Contact Grid */
+            .contact-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+
+            /* Submit Button */
+            .submit-container {
+                text-align: center;
+                margin-top: 25px;
+                padding-top: 20px;
+                border-top: 1px solid var(--border-color);
+            }
+
+            .submit-btn {
+                padding: 12px 30px;
+                background: var(--primary-blue);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .submit-btn:hover {
+                background: #3730a3;
+                transform: translateY(-1px);
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .container {
+                    max-width: 100%;
+                }
+
+                .form-content {
+                    padding: 20px;
+                }
+
+                .applicant-options {
+                    grid-template-columns: 1fr;
+                }
+
+                .two-column-grid,
+                .contact-grid {
+                    grid-template-columns: 1fr;
+                    gap: 15px;
+                }
+
+                .submit-btn {
+                    width: 100%;
+                    padding: 12px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                body {
+                    padding: 10px;
+                }
+
+                .form-content {
+                    padding: 15px;
+                }
+
+                .form-header {
+                    padding: 15px;
+                }
+
+                .form-header h1 {
+                    font-size: 18px;
+                }
+            }
+
+            /* Validation Styles */
+            .error-input {
+                border-color: var(--danger) !important;
+            }
+
+            /* Focus Effects */
+            .input-container:focus-within .input-icon {
+                color: var(--primary-blue);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="form-wrapper">
+                <!-- Header -->
+                <div class="form-header">
+                    <h1><i class="fas fa-user-graduate"></i> Admission Form</h1>
+                    <p>Fill in all required fields marked with *</p>
+                </div>
+
+                <!-- Form Content -->
+                <div class="form-content">
+                    <!-- Applicant Type Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <i class="fas fa-user-tag"></i>
+                            </div>
+                            <div class="section-title">
+                                <h3>Applicant Type</h3>
+                                <p>Select how you are applying</p>
+                            </div>
+                        </div>
+
+                        <div class="applicant-options">
+                            <div
+                                class="applicant-card"
+                                id="studentCard"
+                                onclick="selectApplicantType('student')"
+                            >
+                                <div class="applicant-icon">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <h4>I am the Student</h4>
+                                <p>Applying for myself</p>
+                            </div>
+
+                            <div
+                                class="applicant-card"
+                                id="parentCard"
+                                onclick="selectApplicantType('parent')"
+                            >
+                                <div class="applicant-icon">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <h4>I am a Parent/Guardian</h4>
+                                <p>Applying on behalf</p>
+                            </div>
+                        </div>
+
+                        <!-- Parent Details (Hidden by default) -->
+                        <div id="parentDetailsSection" class="parent-details">
+                            <div
+                                class="section-header"
+                                style="border-bottom: none; margin-bottom: 10px"
+                            >
+                                <div
+                                    class="section-icon"
+                                    style="background: #fef3c7; color: #d97706"
+                                >
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="section-title">
+                                    <h3>Parent/Guardian Information</h3>
+                                    <p>Your details as the applicant</p>
+                                </div>
+                            </div>
+
+                            <div class="two-column-grid">
+                                <div class="form-group">
+                                    <label class="form-label required">
+                                        <i class="fas fa-user"></i>
+                                        <span>Your Name</span>
+                                    </label>
+                                    <div class="input-container">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input
+                                            type="text"
+                                            id="parentName"
+                                            placeholder="Enter your name"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label required">
+                                        <i class="fas fa-users"></i>
+                                        <span>Relationship</span>
+                                    </label>
+                                    <div class="input-container">
+                                        <i class="fas fa-heart input-icon"></i>
+                                        <select id="parentRelationship">
+                                            <option value="">
+                                                Select relationship
+                                            </option>
+                                            <option value="father">
+                                                Father
+                                            </option>
+                                            <option value="mother">
+                                                Mother
+                                            </option>
+                                            <option value="guardian">
+                                                Guardian
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student Details Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div class="section-title">
+                                <h3>Student Information</h3>
+                                <p>Details about the student</p>
+                            </div>
+                        </div>
+
+                        <div class="two-column-grid">
+                            <!-- Left Column -->
+                            <div class="column">
+                                <div class="form-group">
+                                    <label class="form-label required">
+                                        <i class="fas fa-signature"></i>
+                                        <span>Full Name</span>
+                                    </label>
+                                    <div class="input-container">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input
+                                            type="text"
+                                            id="studentName"
+                                            placeholder="Student's full name"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label required">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Date of Birth</span>
+                                    </label>
+                                    <div class="input-container">
+                                        <i
+                                            class="fas fa-calendar input-icon"
+                                        ></i>
+                                        <input type="date" id="dob" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label required">
+                                        <i class="fas fa-venus-mars"></i>
+                                        <span>Gender</span>
+                                    </label>
+                                    <div class="input-container">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <select id="gender">
+                                            <option value="">
+                                                Select gender
+                                            </option>
+                                            <option value="male">Male</option>
+                                            <option value="female">
+                                                Female
+                                            </option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="column">
+                                <div class="form-group">
+                                    <label class="form-label required">
+                                        <i class="fas fa-graduation-cap"></i>
+                                        <span>Applying for Grade</span>
+                                    </label>
+                                    <div class="input-container">
+                                        <i class="fas fa-school input-icon"></i>
+                                        <select id="applyingFor">
+                                            <option value="">
+                                                Select grade
+                                            </option>
+                                            <option value="nursery">
+                                                Nursery
+                                            </option>
+                                            <option value="kg">KG</option>
+                                            <option value="1">1st Grade</option>
+                                            <option value="2">2nd Grade</option>
+                                            <option value="3">3rd Grade</option>
+                                            <option value="4">4th Grade</option>
+                                            <option value="5">5th Grade</option>
+                                            <option value="6">6th Grade</option>
+                                            <option value="7">7th Grade</option>
+                                            <option value="8">8th Grade</option>
+                                            <option value="9">9th Grade</option>
+                                            <option value="10">
+                                                10th Grade
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label required">
+                                        <i class="fas fa-globe"></i>
+                                        <span>Nationality</span>
+                                    </label>
+                                    <div class="input-container">
+                                        <i class="fas fa-flag input-icon"></i>
+                                        <input
+                                            type="text"
+                                            id="nationality"
+                                            placeholder="e.g., Indian"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <i class="fas fa-address-book"></i>
+                            </div>
+                            <div class="section-title">
+                                <h3>Contact Information</h3>
+                                <p>Student's contact details</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-grid">
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>Email</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="fas fa-envelope input-icon"></i>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        placeholder="student@example.com"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-phone"></i>
+                                    <span>Phone Number</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="fas fa-phone input-icon"></i>
+                                    <input
+                                        type="tel"
+                                        id="phone"
+                                        placeholder="10-digit number"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-phone-alt"></i>
+                                    <span>Alternate Phone</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="fas fa-phone-alt input-icon"></i>
+                                    <input
+                                        type="tel"
+                                        id="alternatePhone"
+                                        placeholder="Alternate number"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fab fa-whatsapp"></i>
+                                    <span>WhatsApp</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="fab fa-whatsapp input-icon"></i>
+                                    <input
+                                        type="tel"
+                                        id="whatsappNumber"
+                                        placeholder="WhatsApp number"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">
+                                <i class="fas fa-home"></i>
+                                <span>Full Address</span>
+                            </label>
+                            <div class="input-container">
+                                <i
+                                    class="fas fa-map-marker-alt input-icon textarea-icon"
+                                ></i>
+                                <textarea
+                                    id="address"
+                                    placeholder="Complete address"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <div class="contact-grid">
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-city"></i>
+                                    <span>City</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="fas fa-city input-icon"></i>
+                                    <input
+                                        type="text"
+                                        id="city"
+                                        placeholder="Enter city"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-landmark"></i>
+                                    <span>State</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="fas fa-landmark input-icon"></i>
+                                    <input
+                                        type="text"
+                                        id="state"
+                                        placeholder="Enter state"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-map-pin"></i>
+                                    <span>PIN Code</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="fas fa-map-pin input-icon"></i>
+                                    <input
+                                        type="text"
+                                        id="pincode"
+                                        placeholder="6-digit PIN"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Section -->
+                    <div class="submit-container">
+                        <button
+                            type="button"
+                            class="submit-btn"
+                            onclick="submitForm()"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                            Submit Application
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SweetAlert2 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script>
+            let applicantType = null;
+
+            // Select applicant type
+            function selectApplicantType(type) {
+                applicantType = type;
+
+                // Update UI
+                document.querySelectorAll(".applicant-card").forEach((card) => {
+                    card.classList.remove("active");
+                });
+
+                if (type === "student") {
+                    document
+                        .getElementById("studentCard")
+                        .classList.add("active");
+                    document.getElementById(
+                        "parentDetailsSection",
+                    ).style.display = "none";
+                } else {
+                    document
+                        .getElementById("parentCard")
+                        .classList.add("active");
+                    document.getElementById(
+                        "parentDetailsSection",
+                    ).style.display = "block";
+                }
+            }
+
+            // Validate email format
+            function validateEmail(email) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(email);
+            }
+
+            // Show error with SweetAlert2
+            function showError(title, message) {
+                Swal.fire({
+                    icon: "error",
+                    title: title,
+                    text: message,
+                    confirmButtonColor: "#4361ee",
+                    confirmButtonText: "OK",
+                    width: 350,
+                });
+            }
+
+            // Show success message
+            function showSuccess(studentName) {
+                const applicantText =
+                    applicantType === "student" ? "Student" : "Parent";
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Submitted!",
+                    html: `
+                    <div style="text-align: center; padding: 10px;">
+                        <i class="fas fa-check-circle" style="font-size: 40px; color: #10b981; margin-bottom: 10px;"></i>
+                        <p style="color: #374151; margin-bottom: 5px;">${applicantText} application for</p>
+                        <p style="color: #4361ee; font-size: 16px; font-weight: 600; margin-bottom: 10px;">${studentName}</p>
+                        <p style="color: #6b7280; font-size: 12px;">has been submitted successfully.</p>
+                    </div>
+                `,
+                    confirmButtonColor: "#10b981",
+                    confirmButtonText: "Done",
+                    width: 350,
+                });
+            }
+
+            // Validate and submit form
+            function submitForm() {
+                // Check applicant type
+                if (!applicantType) {
+                    showError(
+                        "Selection Required",
+                        "Please select Student or Parent",
+                    );
+                    return;
+                }
+
+                // Validate parent fields if applicable
+                if (applicantType === "parent") {
+                    const parentName = document
+                        .getElementById("parentName")
+                        .value.trim();
+                    const parentRelationship =
+                        document.getElementById("parentRelationship").value;
+
+                    if (!parentName) {
+                        showError("Parent Name", "Please enter parent name");
+                        document.getElementById("parentName").focus();
+                        return;
+                    }
+
+                    if (!parentRelationship) {
+                        showError("Relationship", "Please select relationship");
+                        document.getElementById("parentRelationship").focus();
+                        return;
+                    }
+                }
+
+                // Validate student details
+                const requiredFields = [
+                    { id: "studentName", name: "Student Name" },
+                    { id: "dob", name: "Date of Birth" },
+                    { id: "gender", name: "Gender" },
+                    { id: "applyingFor", name: "Grade" },
+                    { id: "nationality", name: "Nationality" },
+                    { id: "email", name: "Email" },
+                    { id: "phone", name: "Phone" },
+                    { id: "address", name: "Address" },
+                    { id: "city", name: "City" },
+                    { id: "state", name: "State" },
+                    { id: "pincode", name: "PIN Code" },
+                ];
+
+                // Check all required fields
+                for (const field of requiredFields) {
+                    const element = document.getElementById(field.id);
+                    const value = element.value.trim();
+
+                    if (!value) {
+                        showError(
+                            `${field.name} Required`,
+                            `Please fill in ${field.name}`,
+                        );
+                        element.focus();
+                        element.classList.add("error-input");
+
+                        // Remove error class when user starts typing
+                        element.addEventListener(
+                            "input",
+                            function () {
+                                this.classList.remove("error-input");
+                            },
+                            { once: true },
+                        );
+
+                        return;
+                    }
+                }
+
+                // Validate email format
+                const email = document.getElementById("email").value.trim();
+                if (!validateEmail(email)) {
+                    showError("Invalid Email", "Please enter valid email");
+                    document.getElementById("email").focus();
+                    document
+                        .getElementById("email")
+                        .classList.add("error-input");
+                    return;
+                }
+
+                // Validate phone numbers
+                const phone = document.getElementById("phone").value.trim();
+                if (!/^[0-9]{10}$/.test(phone)) {
+                    showError("Invalid Phone", "10-digit number required");
+                    document.getElementById("phone").focus();
+                    document
+                        .getElementById("phone")
+                        .classList.add("error-input");
+                    return;
+                }
+
+                const alternatePhone = document
+                    .getElementById("alternatePhone")
+                    .value.trim();
+                if (alternatePhone && !/^[0-9]{10}$/.test(alternatePhone)) {
+                    showError(
+                        "Invalid Phone",
+                        "10-digit alternate phone required",
+                    );
+                    document.getElementById("alternatePhone").focus();
+                    document
+                        .getElementById("alternatePhone")
+                        .classList.add("error-input");
+                    return;
+                }
+
+                const whatsappNumber = document
+                    .getElementById("whatsappNumber")
+                    .value.trim();
+                if (whatsappNumber && !/^[0-9]{10}$/.test(whatsappNumber)) {
+                    showError("Invalid WhatsApp", "10-digit number required");
+                    document.getElementById("whatsappNumber").focus();
+                    document
+                        .getElementById("whatsappNumber")
+                        .classList.add("error-input");
+                    return;
+                }
+
+                // Validate PIN code
+                const pincode = document.getElementById("pincode").value.trim();
+                if (!/^[0-9]{6}$/.test(pincode)) {
+                    showError("Invalid PIN", "6-digit PIN code required");
+                    document.getElementById("pincode").focus();
+                    document
+                        .getElementById("pincode")
+                        .classList.add("error-input");
+                    return;
+                }
+
+                // Validate Date of Birth (must be in past)
+                const dob = new Date(document.getElementById("dob").value);
+                const today = new Date();
+                if (dob >= today) {
+                    showError("Invalid DOB", "Date must be in past");
+                    document.getElementById("dob").focus();
+                    document.getElementById("dob").classList.add("error-input");
+                    return;
+                }
+
+                // All validations passed
+                const studentName = document
+                    .getElementById("studentName")
+                    .value.trim();
+
+                // Show loading
+                Swal.fire({
+                    title: "Submitting...",
+                    text: "Please wait",
+                    allowOutsideClick: false,
+                    width: 300,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                });
+
+                // Simulate API call delay
+                setTimeout(() => {
+                    Swal.close();
+                    showSuccess(studentName);
+
+                    // Reset form after success
+                    setTimeout(() => {
+                        resetForm();
+                    }, 2000);
+                }, 1200);
+            }
+
+            // Reset form after submission
+            function resetForm() {
+                document
+                    .querySelectorAll("input, select, textarea")
+                    .forEach((element) => {
+                        element.value = "";
+                        element.classList.remove("error-input");
+                    });
+
+                document.querySelectorAll(".applicant-card").forEach((card) => {
+                    card.classList.remove("active");
+                });
+
+                document.getElementById("parentDetailsSection").style.display =
+                    "none";
+                applicantType = null;
+
+                // Set today's date as max for DOB
+                const today = new Date().toISOString().split("T")[0];
+                document.getElementById("dob").max = today;
+            }
+
+            // Initialize form on page load
+            document.addEventListener("DOMContentLoaded", function () {
+                // Set max date for DOB (today)
+                const today = new Date().toISOString().split("T")[0];
+                document.getElementById("dob").max = today;
+
+                // Format phone inputs
+                const phoneInputs = [
+                    "phone",
+                    "alternatePhone",
+                    "whatsappNumber",
+                ];
+                phoneInputs.forEach((id) => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener("input", function (e) {
+                            this.value = this.value
+                                .replace(/\D/g, "")
+                                .slice(0, 10);
+                        });
+                    }
+                });
+
+                // Format PIN code
+                document
+                    .getElementById("pincode")
+                    .addEventListener("input", function (e) {
+                        this.value = this.value.replace(/\D/g, "").slice(0, 6);
+                    });
+
+                // Remove error class on input
+                const inputs = document.querySelectorAll(
+                    "input, select, textarea",
+                );
+                inputs.forEach((input) => {
+                    input.addEventListener("input", function () {
+                        this.classList.remove("error-input");
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
